@@ -1,0 +1,77 @@
+package client;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.net.Socket;
+
+import cli.Shell;
+
+public class TcpServerListenerThread implements Runnable {
+
+	private Socket socket;
+	private BufferedReader serverReader;
+	private Shell shell;
+	private String lastMsg;
+	private String lastResponse;
+
+	public TcpServerListenerThread(Socket socket, BufferedReader serverReader, Shell shell) {
+		this.socket = socket;
+		this.serverReader = serverReader;
+		this.shell = shell;
+		this.lastMsg = "No message received yet...";
+		this.lastResponse = "No response received yet...";
+	}
+
+	@Override
+	public void run() {
+		try {
+			String message;
+
+			while ((message = serverReader.readLine()) != null) {
+				
+				if (message.startsWith("[public]")) {
+					//public message
+					message = message.substring(8); //remove "[public]"
+					synchronized(lastMsg) {
+						lastMsg = message;
+					}
+					shell.writeLine(message);
+				} else {
+					//response to user request
+					synchronized(this) {
+						lastResponse = message;
+						notify();
+					}
+				}
+			}
+			//server went offline
+			shell.writeLine("Connection to server closed. Please exit the program.");
+			synchronized(this) {
+				lastResponse = "Connection to server has been lost. Please exit the program.";
+			}
+		} catch (IOException e) {
+		    //System.out.println("IOException during connection with chatserver.");
+			//System.out.println("TcpServerListenerThread finished.");
+		} finally {
+			try {
+			serverReader.close();
+			socket.getInputStream().close();
+			socket.getOutputStream().close();
+			serverReader.close();
+			} catch (IOException e) {
+				//can't handle it
+			}
+		}
+	}
+
+	public String getLastResponse() {
+		return lastResponse;
+	}
+	
+	public String getLastMsg() {
+		synchronized(lastMsg) {
+			return lastMsg;
+		}
+	}
+
+}

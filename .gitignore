@@ -1,0 +1,6 @@
+target
+.metadata
+*.class
+.idea
+*.jar
+*.db
