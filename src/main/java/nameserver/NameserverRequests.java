@@ -4,19 +4,19 @@ import nameserver.exceptions.AlreadyRegisteredException;
 import nameserver.exceptions.InvalidDomainException;
 
 import java.rmi.RemoteException;
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by user on 08.12.2015.
  */
 public class NameserverRequests implements INameserver {
 
-    private HashMap<String, INameserverForChatserver> zones;
-    private HashMap<String, String> users;
+    private Map<String, INameserverForChatserver> zones;
+    private Map<String, String> users;
     private String domain;
 
-    public NameserverRequests(HashMap<String, INameserverForChatserver> zones,
-                              HashMap<String, String> users,
+    public NameserverRequests(Map<String, INameserverForChatserver> zones,
+                              Map<String, String> users,
                               String domain){
         this.zones = zones;
         this.users = users;

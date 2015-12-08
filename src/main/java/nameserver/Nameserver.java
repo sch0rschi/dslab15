@@ -29,8 +29,8 @@ public class Nameserver implements INameserverCli, Runnable {
 
 	private String domain;
 	private INameserver nameserver;
-	private HashMap<String, INameserverForChatserver> zones;
-	private HashMap<String, String> users;
+	private Map<String, INameserverForChatserver> zones;
+	private Map<String, String> users;
 
 	private Registry registry;
 
@@ -51,12 +51,12 @@ public class Nameserver implements INameserverCli, Runnable {
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
 
-		zones = new HashMap<>();
+		zones = Collections.synchronizedMap(new HashMap<String, INameserverForChatserver>());
 
 		try{
 			if(config.listKeys().contains("domain")){ 			// not Root Nameserver
 				domain = config.getString("domain");
-				users = new HashMap<>();
+				users = Collections.synchronizedMap(new HashMap<String, String>());
 				nameserver = new NameserverRequests(zones, users, domain);
 				nameserver.registerNameserver(domain, nameserver, nameserver);
 			} else{ 											// Root Nameserver
