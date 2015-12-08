@@ -25,11 +25,10 @@ public class NameserverRequests implements INameserver {
 
     @Override
     public void registerNameserver(String domain, INameserver nameserver, INameserverForChatserver nameserverForChatserver) throws RemoteException, AlreadyRegisteredException, InvalidDomainException {
-
         String subdomain = domain.replace(this.domain, "");
         String[] split = subdomain.split(".");
         String zone = split[split.length-1];
-        if(zone.length() == 1){
+        if(split.length == 1){
             zones.put(zone, nameserverForChatserver);
         } else{
             ((NameserverRequests)zones.get(zone)).registerNameserver(domain, nameserver, nameserverForChatserver);
@@ -38,7 +37,14 @@ public class NameserverRequests implements INameserver {
 
     @Override
     public void registerUser(String username, String address) throws RemoteException, AlreadyRegisteredException, InvalidDomainException {
-        users.put(username, address);
+        String subdomain = domain.replace(this.domain, "");
+        String[] split = subdomain.split(".");
+        String user = split[split.length-1];
+        if(split.length == 1){
+            users.put(user, address);
+        } else{
+            (zones.get(user)).registerUser(username, address);
+        }
     }
 
     @Override
