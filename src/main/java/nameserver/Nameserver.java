@@ -3,19 +3,36 @@ package nameserver;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.rmi.AlreadyBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.util.*;
 
+import cli.Command;
+import cli.Shell;
+import nameserver.exceptions.AlreadyRegisteredException;
+import nameserver.exceptions.InvalidDomainException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import util.Config;
 
-/**
- * Please note that this class is not needed for Lab 1, but will later be used
- * in Lab 2. Hence, you do not have to implement it for the first submission.
- */
 public class Nameserver implements INameserverCli, Runnable {
+
+	private static Log LOGGER = LogFactory.getLog(Nameserver.class);
 
 	private String componentName;
 	private Config config;
 	private InputStream userRequestStream;
 	private PrintStream userResponseStream;
+	private Shell shell;
+
+	private String domain;
+	private INameserver nameserver;
+	private HashMap<String, INameserverForChatserver> zones;
+	private HashMap<String, String> users;
+
+	private Registry registry;
 
 	/**
 	 * @param componentName
@@ -34,30 +51,84 @@ public class Nameserver implements INameserverCli, Runnable {
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
 
-		// TODO
+		zones = new HashMap<>();
+
+		try{
+			if(config.listKeys().contains("domain")){ 			// not Root Nameserver
+				domain = config.getString("domain");
+				users = new HashMap<>();
+				nameserver = new NameserverRequests(zones, users, domain);
+				nameserver.registerNameserver(domain, nameserver, nameserver);
+			} else{ 											// Root Nameserver
+				domain = "";
+				users = null;
+				nameserver = new NameserverRequests(zones, users, domain);
+
+				int port = config.getInt("registry.port");
+				registry = LocateRegistry.createRegistry(port);
+				registry.bind(config.getString("root-id"), nameserver);
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		} catch (AlreadyBoundException e) {
+			e.printStackTrace();
+		} catch (AlreadyRegisteredException e) {
+			e.printStackTrace();
+		} catch (InvalidDomainException e) {
+			e.printStackTrace();
+		}
+
+		shell = new Shell(this.componentName, this.userRequestStream, this.userResponseStream);
+		shell.register(this);
 	}
 
 	@Override
 	public void run() {
-		// TODO
+		LOGGER.info("Nameserver started");
+
+		//start shell
+		new Thread(shell).start();
+		System.out.println(getClass().getName()
+				+ " up and waiting for commands!");
 	}
 
 	@Override
+	@Command
 	public String nameservers() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		String nameserversString = "";
+		List<String> nameserversList = new LinkedList<>();
+		for (INameserverForChatserver zone : zones.values()) {
+			nameserversList.add(((NameserverRequests) zone).zone());
+		}
+		Collections.sort(nameserversList);
+		for (String zone : nameserversList){
+			nameserversString += zone + "\n";
+		}
+
+		return nameserversString.trim();
 	}
 
 	@Override
+	@Command
 	public String addresses() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		String usersString = "";
+		List<String> usersList = new LinkedList<>();
+		for(Map.Entry<String, String> user : users.entrySet()){
+			usersList.add(user.getKey() + " " + user.getValue());
+		}
+		Collections.sort(usersList);
+		for(String user : usersList){
+			usersString += user;
+		}
+		return usersString.trim();
 	}
 
 	@Override
+	@Command
 	public String exit() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		LOGGER.debug("Preparing exit");
+		shell.close();
+		return "Shutting down program...";
 	}
 
 	/**
@@ -68,7 +139,6 @@ public class Nameserver implements INameserverCli, Runnable {
 	public static void main(String[] args) {
 		Nameserver nameserver = new Nameserver(args[0], new Config(args[0]),
 				System.in, System.out);
-		// TODO: start the nameserver
+		new Thread(nameserver).start();
 	}
-
 }
