@@ -60,7 +60,7 @@ public class Nameserver implements INameserverCli, Runnable {
 				users = Collections.synchronizedMap(new HashMap<String, String>());
 				nameserver = new NameserverRequests(zones, users, domain);
 				registry =  LocateRegistry.getRegistry(config.getString("registery.host"), config.getInt("registery.port"));
-				INameserver rootNameserver = (INameserver)registry.lookup(config.getString("root-nameserver"));
+				INameserver rootNameserver = (INameserver)registry.lookup(config.getString("root-id"));
 				rootNameserver.registerNameserver(domain, (INameserver)this, (INameserverForChatserver)this);
 			} else{ 											// Root Nameserver
 				domain = "";
