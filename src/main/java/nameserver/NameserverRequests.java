@@ -3,13 +3,14 @@ package nameserver;
 import nameserver.exceptions.AlreadyRegisteredException;
 import nameserver.exceptions.InvalidDomainException;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Map;
 
 /**
  * Created by user on 08.12.2015.
  */
-public class NameserverRequests implements INameserver {
+public class NameserverRequests implements INameserver, Serializable {
 
     private Map<String, INameserverForChatserver> zones;
     private Map<String, String> users;
@@ -24,26 +25,22 @@ public class NameserverRequests implements INameserver {
     }
 
     @Override
-    public void registerNameserver(String domain, INameserver nameserver, INameserverForChatserver nameserverForChatserver) throws RemoteException, AlreadyRegisteredException, InvalidDomainException {
-        String subdomain = domain.replace(this.domain, "");
-        String[] split = subdomain.split(".");
-        String zone = split[split.length-1];
-        if(split.length == 1){
-            zones.put(zone, nameserverForChatserver);
+    public void registerNameserver(String domainName, INameserver nameserver, INameserverForChatserver nameserverForChatserver) throws RemoteException, AlreadyRegisteredException, InvalidDomainException {
+        Domain domain = new Domain(domainName);
+        if(domain.hasSubdomain()){
+            ((NameserverRequests)zones.get(domain.getZone())).registerNameserver(domain.getSubdomain(), nameserver, nameserverForChatserver);
         } else{
-            ((NameserverRequests)zones.get(zone)).registerNameserver(domain, nameserver, nameserverForChatserver);
+            this.zones.put(domain.getZone(), nameserverForChatserver);
         }
     }
 
     @Override
     public void registerUser(String username, String address) throws RemoteException, AlreadyRegisteredException, InvalidDomainException {
-        String subdomain = domain.replace(this.domain, "");
-        String[] split = subdomain.split(".");
-        String user = split[split.length-1];
-        if(split.length == 1){
-            users.put(user, address);
+        Domain domain = new Domain(username);
+        if(domain.hasSubdomain()){
+            (zones.get(domain.getZone())).registerUser(username, address);
         } else{
-            (zones.get(user)).registerUser(username, address);
+            this.users.put(domain.getZone(), address);
         }
     }
 
@@ -62,7 +59,11 @@ public class NameserverRequests implements INameserver {
     }
 
     public String zone(){
-        String [] zones = domain.split(".");
-        return zones[0];
+        String [] zones = domain.split("\\.");
+        if(zones.length == 0){
+            return "root";
+        } else{
+            return zones[0];
+        }
     }
 }

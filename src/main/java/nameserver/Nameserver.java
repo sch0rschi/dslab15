@@ -8,6 +8,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 
 import cli.Command;
@@ -58,10 +59,13 @@ public class Nameserver implements INameserverCli, Runnable {
 			if(config.listKeys().contains("domain")){ 			// not Root Nameserver
 				domain = config.getString("domain");
 				users = Collections.synchronizedMap(new HashMap<String, String>());
+
 				nameserver = new NameserverRequests(zones, users, domain);
-				registry =  LocateRegistry.getRegistry(config.getString("registery.host"), config.getInt("registery.port"));
-				INameserver rootNameserver = (INameserver)registry.lookup(config.getString("root-id"));
-				rootNameserver.registerNameserver(domain, (INameserver)this, (INameserverForChatserver)this);
+
+				registry =  LocateRegistry.getRegistry(config.getString("registry.host"), config.getInt("registry.port"));
+				INameserver rootNameserver = (INameserver)registry.lookup(config.getString("root_id"));
+
+				rootNameserver.registerNameserver(domain, nameserver, nameserver);
 			} else{ 											// Root Nameserver
 				domain = "";
 				users = null;
@@ -69,7 +73,8 @@ public class Nameserver implements INameserverCli, Runnable {
 
 				int port = config.getInt("registry.port");
 				registry = LocateRegistry.createRegistry(port);
-				registry.bind(config.getString("root-id"), nameserver);
+				INameserver iNameserver = (INameserver) UnicastRemoteObject.exportObject(nameserver, 0);
+				registry.bind(config.getString("root_id"), iNameserver);
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -106,10 +111,10 @@ public class Nameserver implements INameserverCli, Runnable {
 			nameserversList.add(((NameserverRequests) zone).zone());
 		}
 		Collections.sort(nameserversList);
+		int i = 1;
 		for (String zone : nameserversList){
-			nameserversString += zone + "\n";
+			nameserversString += (i++) + ". " + zone + "\n";
 		}
-
 		return nameserversString.trim();
 	}
 
@@ -122,8 +127,9 @@ public class Nameserver implements INameserverCli, Runnable {
 			usersList.add(user.getKey() + " " + user.getValue());
 		}
 		Collections.sort(usersList);
+		int i = 1;
 		for(String user : usersList){
-			usersString += user;
+			usersString += (i++) + ". " + user + "." + domain;
 		}
 		return usersString.trim();
 	}
