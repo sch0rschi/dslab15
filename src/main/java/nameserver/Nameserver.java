@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.rmi.AlreadyBoundException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -58,7 +59,9 @@ public class Nameserver implements INameserverCli, Runnable {
 				domain = config.getString("domain");
 				users = Collections.synchronizedMap(new HashMap<String, String>());
 				nameserver = new NameserverRequests(zones, users, domain);
-				nameserver.registerNameserver(domain, nameserver, nameserver);
+				registry =  LocateRegistry.getRegistry(config.getString("registery.host"), config.getInt("registery.port"));
+				INameserver rootNameserver = (INameserver)registry.lookup(config.getString("root-nameserver"));
+				rootNameserver.registerNameserver(domain, (INameserver)this, (INameserverForChatserver)this);
 			} else{ 											// Root Nameserver
 				domain = "";
 				users = null;
@@ -75,6 +78,8 @@ public class Nameserver implements INameserverCli, Runnable {
 		} catch (AlreadyRegisteredException e) {
 			e.printStackTrace();
 		} catch (InvalidDomainException e) {
+			e.printStackTrace();
+		} catch (NotBoundException e) {
 			e.printStackTrace();
 		}
 
