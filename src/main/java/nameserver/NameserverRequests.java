@@ -24,11 +24,18 @@ public class NameserverRequests implements INameserver {
 
         Domain domain = new Domain(domainString);
 
-        if (domain.hasSubdomain()) {
-            subzones.get(domain.getZone()).registerNameserver(domain.getSubdomain().toString(), nameserver, nameserverForChatserver);
+        if(domain.isDomain()){
+            if (domain.hasSubdomain()) {
+                subzones.get(domain.getZone()).registerNameserver(domain.getSubdomain().toString(), nameserver, nameserverForChatserver);
+            } else if(subzones.containsKey(domain.getZone())){
+                throw new AlreadyRegisteredException(domain.getZone() + " already registered in this domain.");
+            } else{
+                subzones.put(domain.getZone(), nameserver);
+            }
         } else {
-            subzones.put(domain.getZone(), nameserver);
+            throw new InvalidDomainException(domain.toString() + " is no valid domain.");
         }
+
     }
 
     @Override
@@ -36,20 +43,35 @@ public class NameserverRequests implements INameserver {
 
         Domain domain = new Domain(username);
 
-        if (domain.hasSubdomain()) {
-            subzones.get(domain.getZone()).registerUser(domain.getSubdomain().toString(), address);
-        } else {
-            registeredUsers.put(username, address);
+        if(domain.isDomain()){
+            if (domain.hasSubdomain()) {
+                subzones.get(domain.getZone()).registerUser(domain.getSubdomain().toString(), address);
+            } else if(registeredUsers.containsKey(username)){
+                throw new AlreadyRegisteredException(username + " is already registered in this domain.");
+            } else {
+                registeredUsers.put(username, address);
+            }
+        }else {
+            throw new InvalidDomainException(domain.toString() + " is no valid domain.");
         }
     }
 
     @Override
     public INameserverForChatserver getNameserver(String zone) throws RemoteException {
-        return subzones.get(zone);
+        if(subzones.containsKey(zone)){
+            return subzones.get(zone);
+        } else{
+            throw new RemoteException("No Subdomain " + zone + " registered.");
+        }
+
     }
 
     @Override
     public String lookup(String username) throws RemoteException {
-        return registeredUsers.get(username);
+        if(registeredUsers.containsKey(username)){
+            return registeredUsers.get(username);
+        } else{
+            return username + " is not registered.";
+        }
     }
 }

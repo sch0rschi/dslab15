@@ -171,7 +171,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 			}
 			return iNameserverForChatserver.lookup(domain.toString());
 		} catch (RemoteException e) {
-			return name + " is not registered";
+			return "Nameserver was not reachable.";
 		} catch (NotBoundException e) {
 			return null;
 		}

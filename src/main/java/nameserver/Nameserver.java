@@ -20,10 +20,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Please note that this class is not needed for Lab 1, but will later be used
- * in Lab 2. Hence, you do not have to implement it for the first submission.
- */
 public class Nameserver implements INameserverCli, Runnable {
 
 	private static final Log LOGGER = LogFactory.getLog(Nameserver.class);
@@ -60,9 +56,7 @@ public class Nameserver implements INameserverCli, Runnable {
 
 	@Override
 	public void run() {
-		LOGGER.info("Chatserver started");
-
-
+		LOGGER.info(componentName + " started");
 
 		//register nameserver
 		if (config.listKeys().contains("domain")) { 	// non-root nameserver
@@ -75,7 +69,7 @@ public class Nameserver implements INameserverCli, Runnable {
 				INameserver nameserverRemote = (INameserver) UnicastRemoteObject.exportObject(nameserver, 0);
 				root.registerNameserver(config.getString("domain"), nameserverRemote, nameserverRemote);
 			} catch (RemoteException | NotBoundException | InvalidDomainException | AlreadyRegisteredException e) {
-				LOGGER.warn("register as non-root nameserver for domain '" + config.getString("domain") + "'failed", e);
+				LOGGER.warn("Registration for " + config.getString("domain") + " failed", e);
 			}
 		} else{											// root name server
 			try {
@@ -86,7 +80,7 @@ public class Nameserver implements INameserverCli, Runnable {
 				INameserver nameserverRemote = (INameserver) UnicastRemoteObject.exportObject(nameserver, 0);
 				registry.bind(config.getString("root_id"), nameserverRemote);
 			} catch (RemoteException | AlreadyBoundException e) {
-				LOGGER.warn("register as root nameserver failed", e);
+				LOGGER.warn("Registration for root failed", e);
 			}
 		}
 
@@ -140,14 +134,14 @@ public class Nameserver implements INameserverCli, Runnable {
 			if (!UnicastRemoteObject.unexportObject(nameserver, false)) {
 				// force unexport
 				if (!UnicastRemoteObject.unexportObject(nameserver, true)) {
-					LOGGER.info("unexporting remote object failed");
+					LOGGER.info("unexport of " + componentName + " failed");
 				}
 			}
 		} catch (NoSuchObjectException e) {
-			LOGGER.warn("unexporting remote object failed", e);
+			LOGGER.warn("unexport of " + componentName + " failed", e);
 		}
 
-		return "Shut down completed! Bye ..";
+		return "Shutting down " + componentName;
 	}
 
 	/**
