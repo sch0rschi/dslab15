@@ -1,5 +1,6 @@
 package nameserver;
 
+import entities.Domain;
 import nameserver.exceptions.AlreadyRegisteredException;
 import nameserver.exceptions.InvalidDomainException;
 
@@ -7,9 +8,6 @@ import java.rmi.RemoteException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-/**
- * Encapsulates the nameserver's remotely executable methods
- */
 public class NameserverRequests implements INameserver {
     private static final Logger LOGGER = Logger.getAnonymousLogger();
 

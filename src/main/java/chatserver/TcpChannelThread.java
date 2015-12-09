@@ -1,10 +1,21 @@
 package chatserver;
 
+import entities.Domain;
+import entities.User;
+import nameserver.INameserver;
+import nameserver.INameserverForChatserver;
+import util.Config;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 public class TcpChannelThread implements TcpChannel, Runnable {
 
@@ -89,22 +100,22 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 			return "You have to be logged in for this action.";
 		}
 
-		if (!privateAddress.matches("((localhost)|(\\d+\\.\\d+\\.\\d+\\.\\d+)):(\\d+)")) {
-			return "Invalid format of private address.";
-		}
-
-		String[] addressParts = privateAddress.split(":");
-		String ip = addressParts[0];
-		int port;
 		try {
-			port = Integer.parseInt(addressParts[1]);
-		} catch (NumberFormatException e) {
-			return "Wrong address format. Port must be an integer.";
+			int positionOfColon = privateAddress.indexOf(':');
+			String ip = privateAddress.substring(0, positionOfColon);
+			String port = privateAddress.substring(positionOfColon + 1, privateAddress.length());
+			InetAddress.getByName(ip);
+			Integer.parseInt(port);
+
+			Config config = chatserver.getConfig();
+			Registry registry = LocateRegistry.getRegistry(config.getString("registry.host"), config.getInt("registry.port"));
+			INameserver root = (INameserver) registry.lookup(config.getString("root_id"));
+			root.registerUser(client.getName(), privateAddress);
+
+			return "Successfully registered for private messaging. IP: " + ip + ", Port: " + port;
+		} catch (Exception e) {
+			return "Could not resolve private address";
 		}
-
-		client.registerPrivateAddress(ip, port);
-
-		return "Successfully registered for private messaging. IP: " + ip + ", Port: " + port;
 
 	}
 
@@ -148,10 +159,21 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 			return name + " is currently offline";
 		}
 
-		if (userOfInterest.isRegisteredWithPrivateAddress()) {
-			return userOfInterest.getPrivateAddress();
-		} else {
-			return name + " does not provide a private address.";
+		try {
+			Domain domain = new Domain(name);
+			Config config = chatserver.getConfig();
+			Registry registry = LocateRegistry.getRegistry(config.getString("registry.host"), config.getInt("registry.port"));
+			INameserverForChatserver iNameserverForChatserver = (INameserverForChatserver) registry.lookup(config.getString("root_id"));
+
+			while(domain.hasSubdomain()){
+				iNameserverForChatserver = iNameserverForChatserver.getNameserver(domain.getZone());
+				domain = new Domain(domain.getSubdomain());
+			}
+			return iNameserverForChatserver.lookup(domain.toString());
+		} catch (RemoteException e) {
+			return name + " is not registered";
+		} catch (NotBoundException e) {
+			return null;
 		}
 	}
 

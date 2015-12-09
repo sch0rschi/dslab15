@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import entities.User;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -186,4 +187,7 @@ public class Chatserver implements IChatserverCli, Runnable {
 		new Thread(chatserver).start();
 	}
 
+	public Config getConfig() {
+		return config;
+	}
 }

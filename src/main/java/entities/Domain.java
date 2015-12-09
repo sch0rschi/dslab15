@@ -1,4 +1,4 @@
-package nameserver;
+package entities;
 
 public class Domain {
     private String domain;
@@ -18,5 +18,9 @@ public class Domain {
     public String getZone(){
         String[] split = domain.split("\\.");
         return split[split.length-1];
+    }
+
+    public String toString(){
+        return domain;
     }
 }
