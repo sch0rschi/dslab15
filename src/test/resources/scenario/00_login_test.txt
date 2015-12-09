@@ -1,5 +1,15 @@
 *	Chatserver	chatserver
 *	Client		alice.vienna.at
+*   Nameserver  ns-root
+*   Nameserver  ns-at
+*   Nameserver  ns-de
+*   Nameserver  ns-vienna-at
+
+ns-root:    !nameservers
+>           verify(".*at.*de.*", T(test.util.Flag).REGEX)
+
+ns-at:  !nameservers
+>       verify("vienna")
 
 alice.vienna.at:	!login alice.vienna.at 12345
 >					verify("success")

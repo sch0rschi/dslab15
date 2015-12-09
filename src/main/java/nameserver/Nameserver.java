@@ -1,16 +1,5 @@
 package nameserver;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.rmi.AlreadyBoundException;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.*;
-
 import cli.Command;
 import cli.Shell;
 import nameserver.exceptions.AlreadyRegisteredException;
@@ -19,22 +8,34 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import util.Config;
 
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.rmi.AlreadyBoundException;
+import java.rmi.NoSuchObjectException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Please note that this class is not needed for Lab 1, but will later be used
+ * in Lab 2. Hence, you do not have to implement it for the first submission.
+ */
 public class Nameserver implements INameserverCli, Runnable {
 
-	private static Log LOGGER = LogFactory.getLog(Nameserver.class);
+	private static final Log LOGGER = LogFactory.getLog(Nameserver.class);
 
 	private String componentName;
 	private Config config;
 	private InputStream userRequestStream;
 	private PrintStream userResponseStream;
 	private Shell shell;
-
-	private String domain;
-	private INameserver nameserver;
-	private Map<String, INameserverForChatserver> zones;
-	private Map<String, String> users;
-
-	private Registry registry;
+	private NameserverRequests nameserver;
+	private ConcurrentHashMap<String, INameserver> subzones;
+	private ConcurrentHashMap<String, String> registeredUsers;
 
 	/**
 	 * @param componentName
@@ -47,46 +48,11 @@ public class Nameserver implements INameserverCli, Runnable {
 	 *            the output stream to write the console output to
 	 */
 	public Nameserver(String componentName, Config config,
-			InputStream userRequestStream, PrintStream userResponseStream) {
+					  InputStream userRequestStream, PrintStream userResponseStream) {
 		this.componentName = componentName;
 		this.config = config;
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
-
-		zones = Collections.synchronizedMap(new HashMap<String, INameserverForChatserver>());
-
-		try{
-			if(config.listKeys().contains("domain")){ 			// not Root Nameserver
-				domain = config.getString("domain");
-				users = Collections.synchronizedMap(new HashMap<String, String>());
-
-				nameserver = new NameserverRequests(zones, users, domain);
-
-				registry =  LocateRegistry.getRegistry(config.getString("registry.host"), config.getInt("registry.port"));
-				INameserver rootNameserver = (INameserver)registry.lookup(config.getString("root_id"));
-
-				rootNameserver.registerNameserver(domain, nameserver, nameserver);
-			} else{ 											// Root Nameserver
-				domain = "";
-				users = null;
-				nameserver = new NameserverRequests(zones, users, domain);
-
-				int port = config.getInt("registry.port");
-				registry = LocateRegistry.createRegistry(port);
-				INameserver iNameserver = (INameserver) UnicastRemoteObject.exportObject(nameserver, 0);
-				registry.bind(config.getString("root_id"), iNameserver);
-			}
-		} catch (RemoteException e) {
-			e.printStackTrace();
-		} catch (AlreadyBoundException e) {
-			e.printStackTrace();
-		} catch (AlreadyRegisteredException e) {
-			e.printStackTrace();
-		} catch (InvalidDomainException e) {
-			e.printStackTrace();
-		} catch (NotBoundException e) {
-			e.printStackTrace();
-		}
 
 		shell = new Shell(this.componentName, this.userRequestStream, this.userResponseStream);
 		shell.register(this);
@@ -94,52 +60,94 @@ public class Nameserver implements INameserverCli, Runnable {
 
 	@Override
 	public void run() {
-		LOGGER.info("Nameserver started");
+		LOGGER.info("Chatserver started");
+
+
+
+		//register nameserver
+		if (config.listKeys().contains("domain")) { 	// non-root nameserver
+			try {
+				subzones = new ConcurrentHashMap<>();
+				registeredUsers = new ConcurrentHashMap<>();
+				nameserver = new NameserverRequests(subzones, registeredUsers);
+				Registry registry = LocateRegistry.getRegistry(config.getString("registry.host"), config.getInt("registry.port"));
+				INameserver root = (INameserver) registry.lookup(config.getString("root_id"));
+				INameserver nameserverRemote = (INameserver) UnicastRemoteObject.exportObject(nameserver, 0);
+				root.registerNameserver(config.getString("domain"), nameserverRemote, nameserverRemote);
+			} catch (RemoteException | NotBoundException | InvalidDomainException | AlreadyRegisteredException e) {
+				LOGGER.warn("register as non-root nameserver for domain '" + config.getString("domain") + "'failed", e);
+			}
+		} else{											// root name server
+			try {
+				subzones = new ConcurrentHashMap<>();
+				registeredUsers = null;
+				nameserver = new NameserverRequests(subzones, registeredUsers);
+				Registry registry = LocateRegistry.createRegistry(config.getInt("registry.port"));
+				INameserver nameserverRemote = (INameserver) UnicastRemoteObject.exportObject(nameserver, 0);
+				registry.bind(config.getString("root_id"), nameserverRemote);
+			} catch (RemoteException | AlreadyBoundException e) {
+				LOGGER.warn("register as root nameserver failed", e);
+			}
+		}
 
 		//start shell
 		new Thread(shell).start();
-		System.out.println(getClass().getName()
-				+ " up and waiting for commands!");
+		System.out.println(componentName + " up and waiting for commands!");
 	}
 
-	@Override
 	@Command
-	public String nameservers() throws IOException {
-		String nameserversString = "";
-		List<String> nameserversList = new LinkedList<>();
-		for (INameserverForChatserver zone : zones.values()) {
-			nameserversList.add(((NameserverRequests) zone).zone());
+	@Override
+	public String nameservers() {
+		List<String> zonesList = new LinkedList<>();
+		String zonesString = "";
+		int counter = 1;
+
+		for(String iNameserver : subzones.keySet()){
+			zonesList.add(iNameserver);
 		}
-		Collections.sort(nameserversList);
-		int i = 1;
-		for (String zone : nameserversList){
-			nameserversString += (i++) + ". " + zone + "\n";
+		Collections.sort(zonesList);
+
+		for (String zone : zonesList) {
+			zonesString += counter + ": " + zone + "\n";
 		}
-		return nameserversString.trim();
+		return zonesString.trim();
 	}
 
-	@Override
 	@Command
-	public String addresses() throws IOException {
-		String usersString = "";
+	@Override
+	public String addresses() {
 		List<String> usersList = new LinkedList<>();
-		for(Map.Entry<String, String> user : users.entrySet()){
+		String userString = "";
+		int counter = 1;
+
+		for(Map.Entry<String, String> user : registeredUsers.entrySet()){
 			usersList.add(user.getKey() + " " + user.getValue());
 		}
 		Collections.sort(usersList);
-		int i = 1;
-		for(String user : usersList){
-			usersString += (i++) + ". " + user + "." + domain;
+
+		for (String user : usersList) {
+			userString += counter + ": " + user + "\n";
 		}
-		return usersString.trim();
+		return userString.trim();
 	}
 
-	@Override
 	@Command
-	public String exit() throws IOException {
-		LOGGER.debug("Preparing exit");
+	@Override
+	public String exit() {
 		shell.close();
-		return "Shutting down program...";
+
+		try {
+			if (!UnicastRemoteObject.unexportObject(nameserver, false)) {
+				// force unexport
+				if (!UnicastRemoteObject.unexportObject(nameserver, true)) {
+					LOGGER.info("unexporting remote object failed");
+				}
+			}
+		} catch (NoSuchObjectException e) {
+			LOGGER.warn("unexporting remote object failed", e);
+		}
+
+		return "Shut down completed! Bye ..";
 	}
 
 	/**
@@ -150,6 +158,7 @@ public class Nameserver implements INameserverCli, Runnable {
 	public static void main(String[] args) {
 		Nameserver nameserver = new Nameserver(args[0], new Config(args[0]),
 				System.in, System.out);
-		new Thread(nameserver).start();
+		nameserver.run();
 	}
+
 }
