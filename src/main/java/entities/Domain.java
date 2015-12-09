@@ -1,8 +1,5 @@
 package entities;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 public class Domain {
     private String domain;
 
@@ -28,11 +25,6 @@ public class Domain {
     }
 
     public boolean isDomain(){
-        try{
-            InetAddress.getAllByName(domain);
-            return true;
-        } catch (UnknownHostException e) {
-            return false;
-        }
+        return domain.matches("[A-z0-9.]+") && !domain.contains("..");
     }
 }

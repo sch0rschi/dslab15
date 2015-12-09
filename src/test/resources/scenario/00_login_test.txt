@@ -28,7 +28,7 @@ bill.de:            !login bill.de 23456
 >                   verify("success")
 
 bill.de:            !lookup alice.vienna.at
->                   verify("success")
+>                   verify("localhost:1337")
 
 bill.de:            !msg alice.vienna.at hallo1
 >                   verify("ACK")
