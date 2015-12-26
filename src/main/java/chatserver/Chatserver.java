@@ -174,6 +174,12 @@ public class Chatserver implements IChatserverCli, Runnable {
 			}
 		}
 	}
+	/**
+	 * return config
+	 * */
+	public Config getConfig(){
+		return this.config;
+	}
 
 	/**
 	 * @param args
@@ -181,9 +187,10 @@ public class Chatserver implements IChatserverCli, Runnable {
 	 *            component
 	 */
 	public static void main(String[] args) {
-		Chatserver chatserver = new Chatserver(args[0],
+		Chatserver chatserver = new Chatserver("Chatserver",
 				new Config("chatserver"), System.in, System.out);
 		new Thread(chatserver).start();
 	}
+
 
 }
