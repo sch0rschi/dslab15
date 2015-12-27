@@ -1,4 +1,4 @@
-package client;
+package entities;
 
 public class OtherUser {
 	

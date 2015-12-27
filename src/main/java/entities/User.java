@@ -1,4 +1,6 @@
-package chatserver;
+package entities;
+
+import chatserver.TcpChannel;
 
 public class User {
 	
