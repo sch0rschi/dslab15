@@ -95,6 +95,7 @@ public class Client implements IClientCli, Runnable {
 	public String login(String username, String password) throws IOException {
 		try {
 			synchronized (tcpServerListenerThread) {
+				authenticate(username);
 				serverWriter.println(encryption("!login " + username + " " + password));
 				tcpServerListenerThread.wait(5000);
 			}
