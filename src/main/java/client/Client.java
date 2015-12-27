@@ -5,6 +5,8 @@ import Channel.Base64Crypto;
 import Channel.RSACrypto;
 import cli.Command;
 import cli.Shell;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import util.Config;
 import util.Keys;
 
@@ -16,6 +18,8 @@ import java.security.SecureRandom;
 import java.security.Security;
 
 public class Client implements IClientCli, Runnable {
+
+	private static Log LOGGER = LogFactory.getLog(Client.class);
 
 	private String componentName;
 	private Config config;
@@ -51,7 +55,7 @@ public class Client implements IClientCli, Runnable {
 		this.userRequestStream = userRequestStream;
 		this.userResponseStream = userResponseStream;
 		try {
-			this.publicKey = Keys.readPublicPEM(new File(config.getString("chatserver.key")));
+			this.publicKey = Keys.readPublicPEM(new File("./" + config.getString("chatserver.key")));
 		} catch (IOException e) {
 			System.out.println("Server error!");
 		}
@@ -298,17 +302,22 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String authenticate(String username) {
 		// authenticate phase 1
+		LOGGER.info("Authenticate phase 1 startet.");
 		byte[] encryption = null;
 		String client_c = null;
+		LOGGER.info("Trying to access: " + "./" + config.getString("keys.dir") + "/" + username + ".pem");
 		try {
-			privateKey = Keys.readPrivatePEM(new File(config.getString("keys.dir") + "\\" + username + ".pem"));
+
+			privateKey = Keys.readPrivatePEM(new File("./" + config.getString("keys.dir") + "/" + username + ".pem"));
 		} catch (IOException e1) {
+			LOGGER.error("Read privatekey from file failed.");
 			return "no user found with the given username";
 		}
 		// generates a 32 byte secure random number
 		SecureRandom secureRandom = new SecureRandom();
 		final byte[] clientChallenge = new byte[32];
 		secureRandom.nextBytes(clientChallenge);
+
 		try {
 			encryption = (new Base64Crypto(null, new String(clientChallenge))).encode();
 			client_c = new String(encryption);
@@ -328,6 +337,7 @@ public class Client implements IClientCli, Runnable {
 		}
 
 		// authenticate phase 2
+		LOGGER.info("Authenticate phase 2 startet.");
 		String message_2nd = tcpServerListenerThread.getLastResponse();
 		String[] message_2nd_parts = null;
 		try {
@@ -339,8 +349,7 @@ public class Client implements IClientCli, Runnable {
 				secretkey = (new Base64Crypto(null, message_2nd_parts[3])).decode();
 				iv = (new Base64Crypto(null, message_2nd_parts[4])).decode();
 				encryption = (new Base64Crypto(new AESCrypto(null, message_2nd_parts[2],
-						(new Base64Crypto(null, message_2nd_parts[3])).decode(),
-						(new Base64Crypto(null, message_2nd_parts[4])).decode()), "")).encode();
+						secretkey, iv), "")).encode();
 				// send the encrypted chatserverChallenge(AES)
 				try {
 					synchronized (tcpServerListenerThread) {

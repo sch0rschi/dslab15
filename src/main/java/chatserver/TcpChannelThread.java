@@ -43,7 +43,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 	public TcpChannelThread(Chatserver chatserver, Socket socket) throws IOException {
 		this.chatserver = chatserver;
 		this.socket = socket;
-		privateKey = Keys.readPrivatePEM(new File(chatserver.getConfig().getString("key")));
+		privateKey = Keys.readPrivatePEM(new File("./" + chatserver.getConfig().getString("key")));
 		handshakePhase1 = false;
 		handshakePhase2 = false;
 		// prepare the input reader for the socket
@@ -60,10 +60,13 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 		try {
 			if (decryptionInArray.length == 3 && decryptionInArray[0].equals("!authenticate")) {
 				handshakePhase1 = true;
+				LOGGER.info("Trying to access file: " + "./" + chatserver.getConfig().getString("keys.dir") + "/" + decryptionInArray[1] + ".pub.pem");
 				publicKey = Keys.readPublicPEM(new File(
-						chatserver.getConfig().getString("keys.dir") + "\\" + decryptionInArray[1] + ".pub.pem"));
+						"./" + chatserver.getConfig().getString("keys.dir") + "/" + decryptionInArray[1] + ".pub.pem"));
+				LOGGER.info("Public key of " + decryptionInArray[1] + ": " + publicKey);
 			}
 		} catch (IOException e) {
+			LOGGER.warn("public key of " + decryptionInArray[1] +" not found.");
 			handshakePhase1 = false; // if public key for client not
 										// find,handshakePhase1 fails.
 		}
