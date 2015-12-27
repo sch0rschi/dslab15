@@ -1,38 +1,19 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
+import Channel.AESCrypto;
+import Channel.Base64Crypto;
+import Channel.RSACrypto;
 import cli.Command;
 import cli.Shell;
 import util.Config;
 import util.Keys;
 
+import java.io.*;
+import java.net.*;
 import java.security.PrivateKey;
-import java.security.Provider;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
-
-import Channel.*;
 
 public class Client implements IClientCli, Runnable {
 

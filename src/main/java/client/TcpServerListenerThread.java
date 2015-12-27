@@ -1,10 +1,10 @@
 package client;
 
+import cli.Shell;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.Socket;
-
-import cli.Shell;
 
 public class TcpServerListenerThread implements Runnable {
 

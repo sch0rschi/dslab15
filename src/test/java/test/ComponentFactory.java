@@ -1,14 +1,14 @@
 package test;
 
+import chatserver.Chatserver;
+import chatserver.IChatserverCli;
+import client.Client;
+import client.IClientCli;
 import nameserver.INameserverCli;
 import nameserver.Nameserver;
 import util.Config;
 import util.TestInputStream;
 import util.TestOutputStream;
-import chatserver.Chatserver;
-import chatserver.IChatserverCli;
-import client.Client;
-import client.IClientCli;
 
 /**
  * Provides methods for starting an arbitrary amount of various components.

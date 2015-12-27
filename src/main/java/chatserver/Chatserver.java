@@ -1,23 +1,18 @@
 package chatserver;
 
+import cli.Command;
+import cli.Shell;
+import entities.User;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import util.Config;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import entities.User;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import cli.Command;
-import cli.Shell;
-import util.Config;
+import java.util.*;
 
 public class Chatserver implements IChatserverCli, Runnable {
 	
@@ -193,8 +188,4 @@ public class Chatserver implements IChatserverCli, Runnable {
 		new Thread(chatserver).start();
 	}
 
-
-	public Config getConfig() {
-		return config;
-	}
 }

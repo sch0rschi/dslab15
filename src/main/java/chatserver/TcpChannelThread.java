@@ -1,41 +1,29 @@
 package chatserver;
 
+import Channel.AESCrypto;
+import Channel.Base64Crypto;
+import Channel.RSACrypto;
 import entities.Domain;
 import entities.User;
 import nameserver.INameserver;
 import nameserver.INameserverForChatserver;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import util.Config;
+import util.Keys;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
-import Channel.*;
-import sun.misc.BASE64Encoder;
-import sun.org.mozilla.javascript.internal.ast.Symbol;
-import sun.security.krb5.Config;
-import util.Keys;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
 
 public class TcpChannelThread implements TcpChannel, Runnable {
 	private static Log LOGGER = LogFactory.getLog(TcpChannelThread.class);

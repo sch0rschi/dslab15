@@ -1,7 +1,5 @@
 package Channel;
 
-import org.bouncycastle.asn1.cmp.ProtectedPart;
-
 public class CryptoDecorator implements Crypto {
 	protected Crypto channelToBeDecorated;
 	protected String message;
