@@ -1,21 +1,23 @@
 package client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import util.Keys;
+
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
 
+import javax.crypto.Mac;
 import cli.Command;
 import cli.Shell;
 import util.Config;
+import org.bouncycastle.util.encoders.Base64;
 
 public class Client implements IClientCli, Runnable {
 
@@ -166,6 +168,7 @@ public class Client implements IClientCli, Runnable {
 	@Override
 	@Command
 	public String msg(String username, String message) throws IOException {
+
 		//privateAddress: either an actual address or a failure message. We need to find out.
 		String privateAddress = lookup(username);
 
@@ -181,26 +184,35 @@ public class Client implements IClientCli, Runnable {
 
 			String response;
 			Socket privateMsgSocket = null;
+			SignatedChannel channel; //Channel with <HMAC> message signation
 
 			//establish connection and write message
 			try {
 				privateMsgSocket = new Socket(ip, port);
-				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(privateMsgSocket.getInputStream()));
-				PrintWriter writer = new PrintWriter(privateMsgSocket.getOutputStream(), true);
-				writer.println(this.username + " (private): " + message);
-				response = reader.readLine();
+				channel = new TcpPrivateChannelThread(socket, shell);
+
+				channel.write(" !msg " + message); //format: <HMAC> !msg <message>
+				response = channel.read();
 			} catch (IOException e) {
 				response = "Could not set up communication with " + username;
+				return response;
 			} finally {
 				if (privateMsgSocket != null && !privateMsgSocket.isClosed()) {
 					privateMsgSocket.close();
 				}
 			}
-			if (response.equals("!ack")) {
+
+			//has response been tampered?
+			if (!channel.verify(response)) {
+				return username + "'s response has been tampered.";
+			}
+
+			//response is authentic
+				response = response.substring(response.indexOf(' ') + 1);
+			if (response.startsWith("!ack")) {
 				return username + " replied with !ack";
 			} else {
-				return "Failure: " + response;
+				return username + " informs you that your message has been tampered.";
 			}
 		} else {
 			//Return failure message
@@ -295,5 +307,4 @@ public class Client implements IClientCli, Runnable {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

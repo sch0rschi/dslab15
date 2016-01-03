@@ -114,6 +114,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 
 			return "Successfully registered for private messaging. IP: " + ip + ", Port: " + port;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return "Could not resolve private address";
 		}
 
