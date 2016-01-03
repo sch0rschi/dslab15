@@ -1,8 +1,8 @@
 package chatserver;
 
-import Channel.AESCrypto;
-import Channel.Base64Crypto;
-import Channel.RSACrypto;
+import channel.AESCrypto;
+import channel.Base64Crypto;
+import channel.RSACrypto;
 import entities.Domain;
 import entities.User;
 import nameserver.INameserver;
@@ -60,10 +60,8 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 		try {
 			if (decryptionInArray.length == 3 && decryptionInArray[0].equals("!authenticate")) {
 				handshakePhase1 = true;
-				LOGGER.info("Trying to access file: " + "./" + chatserver.getConfig().getString("keys.dir") + "/" + decryptionInArray[1] + ".pub.pem");
 				publicKey = Keys.readPublicPEM(new File(
 						"./" + chatserver.getConfig().getString("keys.dir") + "/" + decryptionInArray[1] + ".pub.pem"));
-				LOGGER.info("Public key of " + decryptionInArray[1] + ": " + publicKey);
 			}
 		} catch (IOException e) {
 			LOGGER.warn("public key of " + decryptionInArray[1] +" not found.");
@@ -88,7 +86,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 				generator.init(256);
 				key = generator.generateKey();
 				// Secret-Key Base 64 encode
-				secretKey = new Base64Crypto(null, new String(key.getEncoded())).encode();
+				secretKey = new Base64Crypto(null, key.getEncoded()).encode();
 			} catch (Exception e) {
 				System.out.println("Error while encoding Secret Key");
 			}
@@ -96,7 +94,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 
 			secureRandom.nextBytes(iVrandom);
 			// iV Base 64 encode
-			byte[] iV = new Base64Crypto(null, new String(iVrandom)).encode();
+			byte[] iV = (new Base64Crypto(null, iVrandom)).encode();
 			String okMessage = "!ok " + decryptionInArray[2] + " " + new String(serverC) + " " + new String(secretKey)
 					+ " " + new String(iV);
 			// OK-Message with RSA encrypt
@@ -302,17 +300,13 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 
 		try {
 			request = reader.readLine();
-			LOGGER.info("Starting handshake.");
 			response = handshakePhase1(request);
 			if (response != null && handshakePhase1 == true) {
 				write(response);
-				LOGGER.info("Handshake Phase 1 finished successful");
-				LOGGER.info("Starting handshake Phase 2.");
 				request = reader.readLine();
 				response = handshakePhase2(request);
 				if (response != null && handshakePhase2 == true) {
 					write(response);
-					LOGGER.info("Handshake Phase 2 finished successful");
 				} else {
 					socket.close();
 				}

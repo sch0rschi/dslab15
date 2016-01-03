@@ -1,8 +1,8 @@
 package client;
 
-import Channel.AESCrypto;
-import Channel.Base64Crypto;
-import Channel.RSACrypto;
+import channel.AESCrypto;
+import channel.Base64Crypto;
+import channel.RSACrypto;
 import cli.Command;
 import cli.Shell;
 import org.apache.commons.logging.Log;
@@ -197,7 +197,7 @@ public class Client implements IClientCli, Runnable {
 				privateMsgSocket = new Socket(ip, port);
 				BufferedReader reader = new BufferedReader(new InputStreamReader(privateMsgSocket.getInputStream()));
 				PrintWriter writer = new PrintWriter(privateMsgSocket.getOutputStream(), true);
-				writer.println(encryption(this.username + " (private): " + message));
+				writer.println(this.username + " (private): " + message);
 				response = reader.readLine();
 			} catch (IOException e) {
 				response = "Could not set up communication with " + username;
@@ -276,7 +276,7 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String lastMsg() throws IOException {
 
-		return decryption(tcpServerListenerThread.getLastMsg());
+		return tcpServerListenerThread.getLastMsg();
 
 	}
 
@@ -302,10 +302,8 @@ public class Client implements IClientCli, Runnable {
 	@Command
 	public String authenticate(String username) {
 		// authenticate phase 1
-		LOGGER.info("Authenticate phase 1 startet.");
 		byte[] encryption = null;
 		String client_c = null;
-		LOGGER.info("Trying to access: " + "./" + config.getString("keys.dir") + "/" + username + ".pem");
 		try {
 
 			privateKey = Keys.readPrivatePEM(new File("./" + config.getString("keys.dir") + "/" + username + ".pem"));
@@ -337,7 +335,6 @@ public class Client implements IClientCli, Runnable {
 		}
 
 		// authenticate phase 2
-		LOGGER.info("Authenticate phase 2 startet.");
 		String message_2nd = tcpServerListenerThread.getLastResponse();
 		String[] message_2nd_parts = null;
 		try {
