@@ -1,10 +1,10 @@
 package nameserver;
 
-import java.rmi.Remote;
-import java.rmi.RemoteException;
-
 import nameserver.exceptions.AlreadyRegisteredException;
 import nameserver.exceptions.InvalidDomainException;
+
+import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface INameserverForChatserver extends Remote {
 

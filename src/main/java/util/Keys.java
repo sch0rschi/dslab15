@@ -49,7 +49,7 @@ public final class Keys {
 		// PasswordReader(file.getName()));
 
 		PEMReader in = new PEMReader(new FileReader(file),
-				new StaticPasswordReader(file.getName()));
+		new StaticPasswordReader(file.getName()));
 
 		try {
 			KeyPair keyPair = (KeyPair) in.readObject();
