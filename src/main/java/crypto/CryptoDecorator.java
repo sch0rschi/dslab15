@@ -1,4 +1,4 @@
-package Channel;
+package crypto;
 
 public class CryptoDecorator implements Crypto {
 	protected Crypto channelToBeDecorated;

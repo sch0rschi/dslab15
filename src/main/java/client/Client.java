@@ -1,8 +1,8 @@
 package client;
 
-import channel.AESCrypto;
-import channel.Base64Crypto;
-import channel.RSACrypto;
+import crypto.AESCrypto;
+import crypto.Base64Crypto;
+import crypto.RSACrypto;
 import cli.Command;
 import cli.Shell;
 import org.apache.commons.logging.Log;

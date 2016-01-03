@@ -1,4 +1,4 @@
-package Channel;
+package crypto;
 
 public interface Crypto {
 	// Encrypt message

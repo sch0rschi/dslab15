@@ -1,4 +1,4 @@
-package Channel;
+package crypto;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;

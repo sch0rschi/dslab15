@@ -106,6 +106,7 @@ public class Nameserver implements INameserverCli, Runnable {
 
 		for (String zone : zonesList) {
 			zonesString += counter + ": " + zone + "\n";
+			counter++;
 		}
 		return zonesString.trim();
 	}

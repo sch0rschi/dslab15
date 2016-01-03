@@ -1,8 +1,8 @@
 package chatserver;
 
-import channel.AESCrypto;
-import channel.Base64Crypto;
-import channel.RSACrypto;
+import crypto.AESCrypto;
+import crypto.Base64Crypto;
+import crypto.RSACrypto;
 import entities.Domain;
 import entities.User;
 import nameserver.INameserver;
@@ -355,8 +355,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 				chatserver.unregisterTcpChannel(this);
 				logout(); // Logout client - no effect if already logged out
 				if (socket != null && !socket.isClosed())
-					// System.out.println("Connection finished. Closing
-					// channel.");
+					// System.out.println("Connection finished. Closing channel.");
 					socket.close();
 			} catch (IOException e) {
 				// Ignored because we cannot handle it
