@@ -211,26 +211,29 @@ public class Client implements IClientCli, Runnable {
 			// establish connection and write message
 			try {
 				privateMsgSocket = new Socket(ip, port);
-				BufferedReader reader = new BufferedReader(new InputStreamReader(privateMsgSocket.getInputStream()));
-				PrintWriter writer = new PrintWriter(privateMsgSocket.getOutputStream(), true);
-				writer.println(this.username + " (private): " + message);
-				response = reader.readLine();
-				channel = new TcpPrivateChannelThread(socket, shell);
+				channel = new TcpPrivateChannelThread(privateMsgSocket, shell);
 
-				channel.write(" !msg " + message); //format: <HMAC> !msg <message>
+				channel.write("!msg " + message); //format: <HMAC> !msg <message>
 				response = channel.read();
 			} catch (IOException e) {
 				response = "Could not set up communication with " + username;
+				e.printStackTrace();
 				return response;
 			} finally {
 				if (privateMsgSocket != null && !privateMsgSocket.isClosed()) {
-					privateMsgSocket.close();
+						try{
+								privateMsgSocket.getInputStream().close();
+								privateMsgSocket.getOutputStream().close();
+								privateMsgSocket.close();
+						} catch (IOException e) {
+							// Ignored because we cannot handle it
+						}
 				}
 			}
 
 			//has response been tampered?
 			if (!channel.verify(response)) {
-				return username + "'s response has been tampered.";
+				return username + "'s response has been tampered. " + response;
 			}
 
 			//response is authentic
