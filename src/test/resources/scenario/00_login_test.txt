@@ -33,7 +33,7 @@ bill.de:            !lookup alice.vienna.at
 bill.de:            !msg alice.vienna.at hallo1
 >                   verify("ACK")
 
-bill.de:            !msg alice.vienna.at hallo2
+bill.de:            !msg alice.vienna.at hallo2 wie geht's denn?
 >                   verify("ACK")
 
 bill.de:            !send hallo3
