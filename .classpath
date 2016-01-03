@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" output="build" path="src/main/java"/> 
+	<classpathentry kind="src" output="build" path="src/main/java"/>
 	<classpathentry kind="src" output="build" path="src/main/resources"/>
 	<classpathentry kind="src" output="build" path="src/test/resources"/>
 	<classpathentry kind="src" output="build" path="src/test/java"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" />
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="D:/Programm/Dropbox/WS2015/184.167 Verteilte Systeme/Lab1/dslab15-template/dslab15/lib/bcprov-jdk16-140.jar"/>
+	<classpathentry kind="lib" path="D:/Programm/Dropbox/WS2015/184.167 Verteilte Systeme/Lab1/dslab15-template/dslab15/lib/commons-logging-1.1.3.jar"/>
+	<classpathentry kind="lib" path="D:/Programm/Dropbox/WS2015/184.167 Verteilte Systeme/Lab1/dslab15-template/dslab15/lib/hamcrest-core-1.3.jar"/>
+	<classpathentry kind="lib" path="D:/Programm/Dropbox/WS2015/184.167 Verteilte Systeme/Lab1/dslab15-template/dslab15/lib/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="D:/Programm/Dropbox/WS2015/184.167 Verteilte Systeme/Lab1/dslab15-template/dslab15/lib/spring-core-4.1.0.RELEASE.jar"/>
+	<classpathentry kind="lib" path="D:/Programm/Dropbox/WS2015/184.167 Verteilte Systeme/Lab1/dslab15-template/dslab15/lib/spring-expression-4.1.0.RELEASE.jar"/>
 	<classpathentry kind="output" path="build"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk16-140.jar"/>
-	<classpathentry kind="lib" path="lib/commons-logging-1.1.3.jar"/>
-	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
-	<classpathentry kind="lib" path="lib/junit-4.11.jar"/>
-	<classpathentry kind="lib" path="lib/spring-core-4.1.0.RELEASE.jar"/>
-	<classpathentry kind="lib" path="lib/spring-expression-4.1.0.RELEASE.jar"/>
 </classpath>

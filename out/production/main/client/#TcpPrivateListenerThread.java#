@@ -1,13 +1,13 @@
 package client;
 
-import cli.Shell;
-
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import cli.Shell;
 
 public class TcpPrivateListenerThread implements Runnable {
 
@@ -36,7 +36,7 @@ public class TcpPrivateListenerThread implements Runnable {
 			//System.out.println("SocketException caught in TcpPrivateListenerThread");
 		} catch (IOException e) {
 			System.err
-			.println("Error occurred while waiting for other client: "
+			.println("IOException caught while waiting for other client: "
 					+ e.getMessage());
 		} finally {
 			channelPool.shutdown();
