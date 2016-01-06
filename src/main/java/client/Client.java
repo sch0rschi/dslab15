@@ -349,10 +349,10 @@ public class Client implements IClientCli, Runnable {
 		secureRandom.nextBytes(clientChallenge);
 
 		try {
-			encryption = (new Base64Crypto(null, new String(clientChallenge))).encode();
+			encryption = (new Base64Crypto(null, clientChallenge)).encode();
 			client_c = new String(encryption);
 			encryption = (new Base64Crypto(new RSACrypto(null,
-					"!authenticate " + username + " " + (new String(encryption)), publicKey, privateKey), "")).encode();
+					("!authenticate " + username + " " + (new String(encryption))).getBytes(), publicKey, privateKey), null)).encode();
 
 		} catch (Exception e) {
 			return "Server error";
@@ -371,14 +371,14 @@ public class Client implements IClientCli, Runnable {
 		String[] message_2nd_parts = null;
 		try {
 			message_2nd = new String(
-					(new RSACrypto(new Base64Crypto(null, message_2nd), "", null, privateKey)).decode());
+					(new RSACrypto(new Base64Crypto(null, message_2nd.getBytes()), null, null, privateKey)).decode());
 			message_2nd_parts = message_2nd.split(" ");
 			if (message_2nd_parts.length == 5 && message_2nd_parts[0].equals("!ok")
 					&& message_2nd_parts[1].equals(client_c)) {
-				secretkey = (new Base64Crypto(null, message_2nd_parts[3])).decode();
-				iv = (new Base64Crypto(null, message_2nd_parts[4])).decode();
-				encryption = (new Base64Crypto(new AESCrypto(null, message_2nd_parts[2],
-						secretkey, iv), "")).encode();
+				secretkey = (new Base64Crypto(null, message_2nd_parts[3].getBytes())).decode();
+				iv = (new Base64Crypto(null, message_2nd_parts[4].getBytes())).decode();
+				encryption = (new Base64Crypto(new AESCrypto(null, message_2nd_parts[2].getBytes(),
+						secretkey, iv), null)).encode();
 				// send the encrypted chatserverChallenge(AES)
 				try {
 					synchronized (tcpServerListenerThread) {
@@ -404,7 +404,7 @@ public class Client implements IClientCli, Runnable {
 	private String encryption(String message) {
 		byte[] encryption = null;
 		try {
-			encryption = (new Base64Crypto(new AESCrypto(null, message, secretkey, iv), "")).encode();
+			encryption = (new Base64Crypto(new AESCrypto(null, message.getBytes(), secretkey, iv), null)).encode();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -416,7 +416,7 @@ public class Client implements IClientCli, Runnable {
 
 		byte[] decypted = null;
 		try {
-			decypted = (new AESCrypto(new Base64Crypto(null, message), "", secretkey, iv)).decode();
+			decypted = (new AESCrypto(new Base64Crypto(null, message.getBytes()), null, secretkey, iv)).decode();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

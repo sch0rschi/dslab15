@@ -2,9 +2,9 @@ package crypto;
 
 public class CryptoDecorator implements Crypto {
 	protected Crypto channelToBeDecorated;
-	protected String message;
+	protected byte[] message;
 
-	public CryptoDecorator(Crypto channelToBeDecorated, String message) {
+	public CryptoDecorator(Crypto channelToBeDecorated, byte[] message) {
 		this.channelToBeDecorated = channelToBeDecorated;
 		this.message = message;
 	}

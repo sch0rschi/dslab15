@@ -9,7 +9,7 @@ public class AESCrypto extends CryptoDecorator {
 	private SecretKey secretKey;
 	private IvParameterSpec ivParameterSpec;
 
-	public AESCrypto(Crypto channelToBeDecorated, String message, byte[] key, byte[] iv) {
+	public AESCrypto(Crypto channelToBeDecorated, byte[] message, byte[] key, byte[] iv) {
 		super(channelToBeDecorated, message);
 		this.secretKey = new SecretKeySpec(key, "AES");
 		this.ivParameterSpec = new IvParameterSpec(iv);
@@ -27,7 +27,7 @@ public class AESCrypto extends CryptoDecorator {
 		if (super.channelToBeDecorated != null) {
 			encrypt = encryptCipher.doFinal(super.encode());
 		} else {
-			encrypt = encryptCipher.doFinal(super.message.getBytes());
+			encrypt = encryptCipher.doFinal(super.message);
 		}
 
 		return encrypt;
@@ -46,7 +46,7 @@ public class AESCrypto extends CryptoDecorator {
 			decrypt = decryptCipher.doFinal(super.decode());
 		} else {
 
-			decrypt = decryptCipher.doFinal(super.message.getBytes());
+			decrypt = decryptCipher.doFinal(super.message);
 		}
 		return decrypt;
 	}

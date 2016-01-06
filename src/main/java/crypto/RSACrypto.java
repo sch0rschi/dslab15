@@ -8,7 +8,7 @@ public class RSACrypto extends CryptoDecorator {
 	static PublicKey publicKey;
 	static PrivateKey privateKey;
 
-	public RSACrypto(Crypto channelToBeDecorated, String message, PublicKey publicKey, PrivateKey privateKey)
+	public RSACrypto(Crypto channelToBeDecorated, byte[] message, PublicKey publicKey, PrivateKey privateKey)
 			throws Exception {
 		super(channelToBeDecorated, message);
 		this.publicKey = publicKey;
@@ -24,7 +24,7 @@ public class RSACrypto extends CryptoDecorator {
 		if (super.channelToBeDecorated != null) {
 			encrypt = encryptCipher.doFinal(super.encode());
 		} else {
-			encrypt = encryptCipher.doFinal(super.message.getBytes());
+			encrypt = encryptCipher.doFinal(super.message);
 		}
 
 		return encrypt;
@@ -41,7 +41,7 @@ public class RSACrypto extends CryptoDecorator {
 			decrypt = decryptCipher.doFinal(super.decode());
 		} else {
 
-			decrypt = decryptCipher.doFinal(super.message.getBytes());
+			decrypt = decryptCipher.doFinal(super.message);
 		}
 		return decrypt;
 

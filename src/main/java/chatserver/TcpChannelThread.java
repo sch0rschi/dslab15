@@ -54,7 +54,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 
 	public String handshakePhase1(String message) throws Exception {
 		// decrypt the first message from client.
-		byte[] decryption = (new RSACrypto(new Base64Crypto(null, message), "", null, privateKey)).decode();
+		byte[] decryption = (new RSACrypto(new Base64Crypto(null, message.getBytes()), null, null, privateKey)).decode();
 		// split the decrypted message into three parts.
 		String[] decryptionInArray = (new String(decryption)).split(" ");
 		try {
@@ -79,7 +79,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 			final byte[] serverChallenge = new byte[32];
 			secureRandom.nextBytes(serverChallenge);
 			// Server-Challenge Base 64 encode
-			serverC = new Base64Crypto(null, new String(serverChallenge)).encode();
+			serverC = new Base64Crypto(null, serverChallenge).encode();
 			// Secret-Key
 			try {
 				KeyGenerator generator = KeyGenerator.getInstance("AES");
@@ -100,7 +100,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 			// OK-Message with RSA encrypt
 			try {
 				// ciphertext
-				encryption = (new Base64Crypto(new RSACrypto(null, okMessage, publicKey, privateKey), "")).encode();
+				encryption = (new Base64Crypto(new RSACrypto(null, okMessage.getBytes(), publicKey, privateKey), null)).encode();
 			} catch (Exception e) {
 				System.out.println("Exception while encoding ok-Message with RSA" + e);
 			}
@@ -117,7 +117,7 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 
 	public String handshakePhase2(String message) {
 		try {
-			byte[] decypted = (new AESCrypto(new Base64Crypto(null, message), "", key.getEncoded(), iVrandom)).decode();
+			byte[] decypted = (new AESCrypto(new Base64Crypto(null, message.getBytes()), null, key.getEncoded(), iVrandom)).decode();
 			if ((new String((decypted))).equals(new String(serverC))) {
 				handshakePhase2 = true;
 				return "authentication succesfully finished.";
@@ -366,13 +366,13 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 	}
 
 	private String encryption(String message) throws Exception {
-		byte[] encryption = (new Base64Crypto(new AESCrypto(null, message, key.getEncoded(), iVrandom), "")).encode();
+		byte[] encryption = (new Base64Crypto(new AESCrypto(null, message.getBytes(), key.getEncoded(), iVrandom), null)).encode();
 		return new String(encryption);
 	}
 
 	public String decryption(String message) throws Exception {
 
-		byte[] decypted = (new AESCrypto(new Base64Crypto(null, message), "", key.getEncoded(), iVrandom)).decode();
+		byte[] decypted = (new AESCrypto(new Base64Crypto(null, message.getBytes()), null, key.getEncoded(), iVrandom)).decode();
 		return new String(decypted);
 
 	}
