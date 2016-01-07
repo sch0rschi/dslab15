@@ -211,7 +211,7 @@ public class Client implements IClientCli, Runnable {
 			// establish connection and write message
 			try {
 				privateMsgSocket = new Socket(ip, port);
-				channel = new TcpPrivateChannelThread(privateMsgSocket, shell);
+				channel = new TcpPrivateChannelThread(privateMsgSocket, shell, config);
 
 				channel.write("!msg " + message); //format: <HMAC> !msg <message>
 				response = channel.read();
@@ -281,7 +281,7 @@ public class Client implements IClientCli, Runnable {
 			privateComServerSocket.close();
 		}
 		privateComServerSocket = newPrivateComServerSocket;
-		tcpPrivateListenerThread = new TcpPrivateListenerThread(privateComServerSocket, shell);
+		tcpPrivateListenerThread = new TcpPrivateListenerThread(privateComServerSocket, shell, config);
 		// start new Thread that listens to incoming connections and handles
 		// them
 		new Thread(tcpPrivateListenerThread).start(); // will stop when

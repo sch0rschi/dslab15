@@ -125,6 +125,7 @@ public class Nameserver implements INameserverCli, Runnable {
 
 		for (String user : usersList) {
 			userString += counter + ": " + user + "\n";
+			counter++;
 		}
 		return userString.trim();
 	}

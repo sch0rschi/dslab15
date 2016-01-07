@@ -1,6 +1,7 @@
 package client;
 
 import cli.Shell;
+import util.Config;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,10 +14,12 @@ public class TcpPrivateListenerThread implements Runnable {
 
 	private ServerSocket serverSocket;
 	private Shell shell;
+	private Config config;
 
-	public TcpPrivateListenerThread(ServerSocket serverSocket, Shell shell) {
+	public TcpPrivateListenerThread(ServerSocket serverSocket, Shell shell, Config config) {
 		this.serverSocket = serverSocket;
 		this.shell = shell;
+		this.config = config;
 	}
 
 	@Override
@@ -30,7 +33,7 @@ public class TcpPrivateListenerThread implements Runnable {
 				socket = serverSocket.accept();
 
 				//assign socket to new TcpChannelThread
-				channelPool.execute(new TcpPrivateChannelThread(socket, shell));
+				channelPool.execute(new TcpPrivateChannelThread(socket, shell, config));
 			}
 		} catch (SocketException e) {
 			//System.out.println("SocketException caught in TcpPrivateListenerThread");

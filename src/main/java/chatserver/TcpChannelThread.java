@@ -7,6 +7,8 @@ import entities.Domain;
 import entities.User;
 import nameserver.INameserver;
 import nameserver.INameserverForChatserver;
+import nameserver.exceptions.AlreadyRegisteredException;
+import nameserver.exceptions.InvalidDomainException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import util.Config;
@@ -17,6 +19,8 @@ import javax.crypto.SecretKey;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -211,11 +215,11 @@ public class TcpChannelThread implements TcpChannel, Runnable {
 			root.registerUser(client.getName(), privateAddress);
 
 			return "Successfully registered for private messaging. IP: " + ip + ", Port: " + port;
+		} catch (AlreadyRegisteredException e) {
+			return "User is already registered";
 		} catch (Exception e) {
-			e.printStackTrace();
-			return "Could not resolve private address";
+			return "Could not resolve private adress";
 		}
-
 	}
 
 	/**

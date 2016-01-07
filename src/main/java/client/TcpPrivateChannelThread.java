@@ -17,6 +17,7 @@ import java.util.Arrays;
 
 import cli.Shell;
 import org.bouncycastle.util.encoders.Base64;
+import util.Config;
 import util.Keys;
 
 import javax.crypto.Mac;
@@ -27,10 +28,12 @@ public class TcpPrivateChannelThread implements SignatedChannel, Runnable {
     private Shell shell;
     private BufferedReader reader;
     private PrintWriter writer;
+    private Config config;
 
-    public TcpPrivateChannelThread(Socket socket, Shell shell) throws IOException {
+    public TcpPrivateChannelThread(Socket socket, Shell shell, Config config) throws IOException {
         this.socket = socket;
         this.shell = shell;
+        this.config = config;
 
         // prepare the input reader for the socket
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -131,7 +134,7 @@ public class TcpPrivateChannelThread implements SignatedChannel, Runnable {
         Key secretKey;
         Mac hMac;
         try {
-            secretKey = Keys.readSecretKey(new File("./keys/hmac.key"));
+            secretKey = Keys.readSecretKey(new File("./" + config.getString("hmac.key")));
             hMac = Mac.getInstance(secretKey.getAlgorithm());
             hMac.init(secretKey);
         } catch (IOException e) {
